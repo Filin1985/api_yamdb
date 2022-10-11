@@ -37,7 +37,11 @@ class ReviewAdmin(admin.ModelAdmin):
 
 
 class CommentAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('pk', 'text', 'review', 'pub_date', 'author')
+    list_editable = ('text', 'review', 'author')
+    search_fields = ('review',)
+    list_filter = ('author',)
+    empty_value_display = '-пусто-'
 
 
 admin.site.register(Category, CategoryAdmin)

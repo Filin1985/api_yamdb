@@ -121,4 +121,30 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    pass
+    review = models.ForeignKey(
+        Review,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name="Комментируемый отзыв",
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name="Автор комментария",
+    )
+    text = models.TextField(verbose_name="Текст комментария")
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата комментария"
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self) -> str:
+        return self.text[:15]
