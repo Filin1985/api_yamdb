@@ -12,14 +12,18 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField()
     email = serializers.EmailField()
 
-    def save(self, data):
+    def save(self):
         # password = str(randint(11111, 99999))
         password = '12345'
-        user = User.objects.create(username=data['username'], email=data['email'])
+        user = User.objects.create(username=self.validated_data['username'], email=self.validated_data['email'])
         user.set_password(password)
         user.save()
         # send_confirmation_code(user.email, password)
         return user
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
