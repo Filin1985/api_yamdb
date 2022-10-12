@@ -1,9 +1,21 @@
-from rest_framework import status
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
+from rest_framework import status, filters, mixins, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from .serializers import SignUpSerializer, TokenSerializer
+from .serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    TitleSerializer,
+    SignUpSerializer,
+    TokenSerializer
+)
+
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+
 
 class AuthViewSet(ViewSet):
     """Вьюсет для отправки токена при регистрации."""
@@ -26,3 +38,26 @@ class AuthViewSet(ViewSet):
         else:
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
+    # разрешения прописать: POST -Администратор. GET - без токена !!!!
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    pagination_class = PageNumberPagination
+    # разрешения прописать: POST -Администратор. GET - без токена !!!!
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    pagination_class = PageNumberPagination
+    # разрешения прописать: POST -Администратор. GET - без токена !!!!
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
