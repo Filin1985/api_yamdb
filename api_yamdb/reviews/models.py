@@ -1,9 +1,43 @@
-from django.contrib.auth import get_user_model
-from django.db import models
+from django.contrib.auth.validators import ASCIIUsernameValidator
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
 
-User = get_user_model()
 
+class User(AbstractUser):
+    """Модель пользователя."""
+    USER = 1
+    MODERATOR = 2
+    ADMIN = 3
+
+    ROLE_CHOICES = (
+        (USER, 'Пользователь'),
+        (MODERATOR, 'Модератор'),
+        (ADMIN, 'Админ')
+    )
+    username_validator = ASCIIUsernameValidator()
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[username_validator],
+    )
+    email = models.EmailField(unique=True)
+    first_name = models.CharField(
+        max_length=150,
+    )
+    last_name = models.CharField(
+        max_length=150,
+    )
+    bio = models.CharField(
+        max_length=160,
+        null=True,
+        blank=True
+    )
+    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
+
+    def __str__(self):
+        return self.email
+    
 
 class Category(models.Model):
     """Модель категории (типа) произведения (фильм, книга, музыка)."""
