@@ -6,6 +6,8 @@ from rest_framework_simplejwt.views import (
 
 from .views import CategoryViewSet, GenreViewSet, TitleViewSet
 
+app_name = 'api'
+
 router_v1 = DefaultRouter()
 router_v1.register(r'categories', CategoryViewSet, basename='categories')
 router_v1.register(r'genres', GenreViewSet, basename='genres')
