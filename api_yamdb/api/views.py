@@ -19,7 +19,7 @@ from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
 
 class AuthViewSet(ViewSet):
     """Вьюсет для отправки токена при регистрации."""
-    @action(detail=True, methods=['post'])
+    @action(detail=False, methods=['post'])
     def signup(self, request, pk=None, *args, **kwargs):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
@@ -29,7 +29,7 @@ class AuthViewSet(ViewSet):
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=False, methods=['post'])
     def token(self, request, pk=None, *args, **kwargs):
         serializer = TokenSerializer(data=request.data)
         if serializer.is_valid():
