@@ -4,7 +4,9 @@ from rest_framework import filters, mixins, permissions, viewsets
 from rest_framework.pagination import PageNumberPagination
 
 from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
-from .serializers import (CategorySerializer, GenreSerializer,)
+from .serializers import (
+    CategorySerializer, GenreSerializer, TitleSerializer
+)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -18,6 +20,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    pagination_class = PageNumberPagination
+    # разрешения прописать: POST -Администратор. GET - без токена !!!!
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
     pagination_class = PageNumberPagination
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
