@@ -1,3 +1,4 @@
+from email.policy import default
 from django.contrib.auth.validators import ASCIIUsernameValidator
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -7,14 +8,10 @@ from django.conf import settings
 
 class User(AbstractUser):
     """Модель пользователя."""
-    USER = 1
-    MODERATOR = 2
-    ADMIN = 3
-
     ROLE_CHOICES = (
-        (USER, 'Пользователь'),
-        (MODERATOR, 'Модератор'),
-        (ADMIN, 'Админ')
+        ('user', 'Пользователь'),
+        ('moderator', 'Модератор'),
+        ('admin', 'Админ')
     )
     username_validator = ASCIIUsernameValidator()
     username = models.CharField(
@@ -34,11 +31,20 @@ class User(AbstractUser):
         null=True,
         blank=True
     )
-    role = models.PositiveSmallIntegerField(null=True,
-        blank=True, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=50, default="user", choices=ROLE_CHOICES)
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return self.email
+
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = 'admin'
+        return super().save(*args, **kwargs)
 
 
 class Category(models.Model):
