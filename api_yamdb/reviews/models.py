@@ -40,11 +40,12 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
+
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.role = 'admin'
         return super().save(*args, **kwargs)
-    
+
 
 class Category(models.Model):
     """Модель категории (типа) произведения (фильм, книга, музыка)."""
@@ -110,7 +111,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ('year',)
+        ordering = ('-year',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 

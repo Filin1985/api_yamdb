@@ -11,7 +11,9 @@ from .permissions import IsAdminOnly, IsAdminOrModeratorOnly, IsReadOnly
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
-    TitleSerializer,
+    # TitleSerializer,
+    TitleGetSerializer,
+    TitlePostSerializer,
     SignUpSerializer,
     TokenSerializer,
     UserSerializer
@@ -80,7 +82,12 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    # serializer_class = TitleGetSerializer
     pagination_class = PageNumberPagination
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TitleGetSerializer
+        return TitlePostSerializer

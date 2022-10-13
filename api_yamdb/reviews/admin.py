@@ -6,6 +6,7 @@ from .models import Category, Genre, Title, GenreTitle, Review, Comment, User
 class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email')
 
+
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
@@ -17,18 +18,17 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 class TitleAdmin(admin.ModelAdmin):
-    list_display = (
-        'pk', 'name', 'year', 'rating', 'description', 'category',  # 'genre',
-    )
-    list_editable = ('name', 'year', 'description', 'category',)  # 'genre'
+    list_display = ('pk', 'name', 'year', 'rating', 'description', 'category')
+    list_editable = ('name', 'year', 'description', 'category',)
     search_fields = ('name', 'description')
-    list_filter = ('year', 'rating', 'category')  # 'genre',
+    list_filter = ('year', 'rating', 'category')
     empty_value_display = '-пусто-'
 
 
 class GenreTitleAdmin(admin.ModelAdmin):
     list_display = ('genre', 'title')
-    pass
+    list_editable = ('title',)
+    empty_value_display = '-пусто-'
 
 
 class ReviewAdmin(admin.ModelAdmin):
