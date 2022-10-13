@@ -2,6 +2,8 @@ from random import randint
 import requests
 
 from django.contrib.auth import authenticate
+from django.conf import settings
+from django.core.mail import send_mail
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -14,12 +16,17 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def save(self):
-        # password = str(randint(11111, 99999))
-        password = '12345'
         user = User.objects.create(username=self.validated_data['username'], email=self.validated_data['email'])
-        user.set_password(password)
+        confirmation_code = hash(user.email)
+        user.set_password(confirmation_code)
         user.save()
-        # send_confirmation_code(user.email, password)
+        send_mail(
+            'Confirmation Code',
+            f'Your confirmation code: {str(confirmation_code)}',
+            'django2022@gmail.com',
+            [user.email, ],
+            fail_silently=False
+        )
         return user
 
     class Meta:
@@ -31,8 +38,8 @@ class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
 
-    def save(self, data):
-        user = authenticate(username=data['username'], password=data['confirmation_code'])
+    def save(self):
+        user = authenticate(username=self.validated_data['username'], password=self.validated_data['confirmation_code'])
         refresh = RefreshToken.for_user(user)
         return str(refresh.access_token)
 
