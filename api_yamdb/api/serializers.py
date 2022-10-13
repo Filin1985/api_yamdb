@@ -41,6 +41,17 @@ class TokenSerializer(serializers.Serializer):
         refresh = RefreshToken.for_user(user)
         return str(refresh.access_token)
 
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели User."""
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+
+    def validate_username(self, data):
+        if data == 'me':
+            raise serializers.ValidationError("Данное имя пользователя использовать запрещено!")
+        return data
+
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -4,17 +4,20 @@ from rest_framework import status, filters, mixins, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+from .permissions import IsAdminOnly, IsAdminOrModeratorOnly, IsReadOnly
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
     TitleSerializer,
     SignUpSerializer,
-    TokenSerializer
+    TokenSerializer,
+    UserSerializer
 )
 
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
 
 
 class AuthViewSet(ViewSet):
@@ -39,12 +42,32 @@ class AuthViewSet(ViewSet):
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
+class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для просмотра и изменения данных пользователей."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, IsAdminOnly,)
+    pagination_class = PageNumberPagination
+
+
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    """Вьюсет для просмотра и изменения данных пользователей."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    # permission_classes = (IsAuthenticated, )
+    
+    @action(detail=True, methods=['get'], url_path='v1/users/me')
+    def get_user(self, request, pk=None):
+        user = self.get_object()
+        print(user)
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAdminOnly,)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -52,7 +75,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     pagination_class = PageNumberPagination
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
