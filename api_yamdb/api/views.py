@@ -68,6 +68,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
+    lookup_field = 'slug'
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
     permission_classes = (IsAdminOnly,)
 
@@ -76,6 +77,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     pagination_class = PageNumberPagination
+    lookup_field = 'slug'
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
     permission_classes = (IsReadOnly,)
 

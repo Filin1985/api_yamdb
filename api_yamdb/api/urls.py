@@ -5,9 +5,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .views import CategoryViewSet, GenreViewSet, TitleViewSet, AuthViewSet, UserViewSet, ProfileViewSet
 
-app_name = 'api'
-
-app_name = 'api'
 
 router_v1 = DefaultRouter()
 router_v1.register(r'categories', CategoryViewSet, basename='categories')
@@ -21,7 +18,7 @@ user_detail = ProfileViewSet.as_view({
     'patch': 'partial_update',
 })
 
-
+app_name = 'api'
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     # path('users/me/', user_detail, name='user-detail'),
