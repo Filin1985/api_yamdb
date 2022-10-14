@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from rest_framework import status, filters, mixins, permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.pagination import PageNumberPagination
@@ -52,7 +53,6 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
 
-
 class ProfileViewSet(viewsets.ModelViewSet):
     """Вьюсет для просмотра и изменения данных пользователей."""
     queryset = User.objects.all()
@@ -64,29 +64,32 @@ class ProfileViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         print(user)
 
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOnly,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     pagination_class = PageNumberPagination
     lookup_field = 'slug'
-    # разрешения прописать: POST -Администратор. GET - без токена !!!!
-    permission_classes = (IsAdminOnly,)
+    search_fields = ('slug',)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (IsReadOnly,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     pagination_class = PageNumberPagination
     lookup_field = 'slug'
-    # разрешения прописать: POST -Администратор. GET - без токена !!!!
-    permission_classes = (IsReadOnly,)
+    search_fields = ('slug',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     pagination_class = PageNumberPagination
-    filterset_fields = ('name', 'year', 'category')
+    filterset_fields = ('name', 'year', 'category__slug', 'genre__slug')
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
