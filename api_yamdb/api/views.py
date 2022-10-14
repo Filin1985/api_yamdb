@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from rest_framework import status, filters, mixins, permissions, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.pagination import PageNumberPagination
@@ -11,7 +12,6 @@ from .permissions import IsAdminOnly, IsAdminOrModeratorOnly, IsReadOnly
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
-    # TitleSerializer,
     TitleGetSerializer,
     TitlePostSerializer,
     SignUpSerializer,
@@ -84,8 +84,9 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    # serializer_class = TitleGetSerializer
+    filter_backends = (DjangoFilterBackend,)
     pagination_class = PageNumberPagination
+    filterset_fields = ('name', 'year', 'category')
     # разрешения прописать: POST -Администратор. GET - без токена !!!!
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 

@@ -1,5 +1,6 @@
 from random import randint
 import requests
+import datetime
 
 from django.contrib.auth import authenticate
 from django.conf import settings
@@ -106,3 +107,10 @@ class TitlePostSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre',
             'category'
         )
+
+    def validate_year(self, value):
+        if datetime.date.today().year < value:
+            raise serializers.ValidationError(
+                'Год выпуска не может быть больше текущего'
+            )
+        return value
