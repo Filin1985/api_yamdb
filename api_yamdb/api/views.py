@@ -15,6 +15,7 @@ from .serializers import (
     GenreSerializer,
     TitleGetSerializer,
     TitlePostSerializer,
+    ReviewSerializer,
     SignUpSerializer,
     TokenSerializer,
     UserSerializer
@@ -97,3 +98,26 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return TitleGetSerializer
         return TitlePostSerializer
+
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    pagination_class = PageNumberPagination
+
+    # ошибка здесь:
+    def title_pk(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
+    # ошибка здесь:
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.title_pk())
+
+    def get_queryset(self):
+        # Получаем comments из поста с помощью relates name - post
+        return Review.objects.filter(title=self.kwargs.get('title_id'))
+        # return self.title_pk().reviews
+
+
+
