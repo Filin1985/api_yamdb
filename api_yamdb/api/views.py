@@ -107,15 +107,19 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
     # ошибка здесь:
-    def title_pk(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+    #def title_pk(self):
+    #    return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     # ошибка здесь:
+    #def perform_create(self, serializer):
+    #    serializer.save(author=self.request.user, title=self.title_pk())
+
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, title=self.title_pk())
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
-        # Получаем comments из поста с помощью relates name - post
         return Review.objects.filter(title=self.kwargs.get('title_id'))
         # return self.title_pk().reviews
 
