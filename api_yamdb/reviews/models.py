@@ -132,12 +132,11 @@ class Review(models.Model):
     """Модель отзывов пользователей на произведения."""
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Автор отзыва'
     )
-    # должна быть валидация score от 1 до 10
     score = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         verbose_name='Оценка произведения'
@@ -172,7 +171,7 @@ class Comment(models.Model):
         verbose_name="Комментируемый отзыв",
     )
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name="Автор комментария",
