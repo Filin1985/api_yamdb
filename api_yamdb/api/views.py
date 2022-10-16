@@ -115,7 +115,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class ListCreateViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                        mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    pass
+
+
+class CategoryViewSet(ListCreateViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -125,7 +130,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(ListCreateViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -169,6 +174,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [
+        AdminOrModeratorOrAuthoOrIsReadOnly,
+        permissions.IsAuthenticatedOrReadOnly
+    ]
 
     def title_pk(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -182,5 +191,4 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=self.review_pk())
 
     def get_queryset(self):
-        #return Comment.objects.filter(review=self.kwargs.get('review_id'))
         return self.review_pk().comments.all()
