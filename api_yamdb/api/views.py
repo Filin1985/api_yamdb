@@ -17,7 +17,6 @@ from rest_framework.permissions import (
 
 from rest_framework.response import Response
 
-
 from .permissions import (
     IsAdminOnly,
     IsAdminOrReadOnly,
@@ -40,6 +39,7 @@ from .utils import send_confirmation_code
 from reviews.models import (
     Category, Genre, Title, GenreTitle, Review, Comment, User
 )
+from .filters import TitlesFilter
 
 
 class AuthViewSet(ViewSet):
@@ -121,8 +121,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     pagination_class = PageNumberPagination
+    search_fields = ('name',)
     lookup_field = 'slug'
-    search_fields = ('slug',)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -131,22 +131,22 @@ class GenreViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     pagination_class = PageNumberPagination
+    search_fields = ('name',)
     lookup_field = 'slug'
-    search_fields = ('slug',)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitlesFilter
     pagination_class = PageNumberPagination
-    filterset_fields = ('name', 'year', 'category__slug', 'genre__slug')
-    # разрешения прописать: POST -Администратор. GET - без токена !!!!
     permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ("retrieve", "list"):
             return TitleGetSerializer
         return TitlePostSerializer
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
@@ -158,7 +158,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def title_pk(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.title_pk())
