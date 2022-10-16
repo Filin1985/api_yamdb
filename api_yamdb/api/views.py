@@ -1,13 +1,20 @@
 from django.shortcuts import get_object_or_404
+
 from django.contrib.auth.tokens import default_token_generator
-from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import render
+from django.db.models import Avg
 from rest_framework import status, filters, mixins, permissions, viewsets
-from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from rest_framework.permissions import (
+    IsAuthenticated, IsAuthenticatedOrReadOnly
+)
+
 from rest_framework.response import Response
 
 
@@ -23,13 +30,16 @@ from .serializers import (
     TitleGetSerializer,
     TitlePostSerializer,
     ReviewSerializer,
+    CommentSerializer,
     SignUpSerializer,
     TokenSerializer,
     UserSerializer,
 )
 from .utils import send_confirmation_code
 
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
+from reviews.models import (
+    Category, Genre, Title, GenreTitle, Review, Comment, User
+)
 
 
 class AuthViewSet(ViewSet):
@@ -134,12 +144,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action in ("retrieve", "list"):
             return TitleGetSerializer
         return TitlePostSerializer
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
     permission_classes = [
@@ -147,15 +156,32 @@ class ReviewViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly
     ]
 
-    # ошибка здесь:
     def title_pk(self):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
-    # ошибка здесь:
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.title_pk())
 
     def get_queryset(self):
-        # Получаем comments из поста с помощью relates name - post
-        return Review.objects.filter(title=self.kwargs.get('title_id'))
-        # return self.title_pk().reviews
+        return self.title_pk().reviews.all()
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    pagination_class = PageNumberPagination
+
+    def title_pk(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
+    def review_pk(self):
+        return get_object_or_404(
+            Review, pk=self.kwargs.get('review_id'), title=self.title_pk()
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.review_pk())
+
+    def get_queryset(self):
+        #return Comment.objects.filter(review=self.kwargs.get('review_id'))
+        return self.review_pk().comments.all()

@@ -135,7 +135,6 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор отзыва'
     )
-    # должна быть валидация score от 1 до 10
     score = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         verbose_name='Оценка произведения'
