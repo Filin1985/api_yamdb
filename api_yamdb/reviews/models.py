@@ -1,5 +1,3 @@
-from email.policy import default
-from django.contrib.auth.validators import ASCIIUsernameValidator
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -8,43 +6,43 @@ from django.conf import settings
 
 class User(AbstractUser):
     """Модель пользователя."""
-    ROLE_CHOICES = (
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Админ')
-    )
-    username_validator = ASCIIUsernameValidator()
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Admin'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
     username = models.CharField(
         max_length=150,
         unique=True,
-        validators=[username_validator],
     )
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(
-        max_length=150,
-    )
-    last_name = models.CharField(
-        max_length=150,
-    )
+    email = models.EmailField(max_length=254, unique=True)
     bio = models.CharField(
         max_length=160,
         null=True,
         blank=True
     )
-    role = models.CharField(max_length=50, default="user", choices=ROLE_CHOICES)
+    role = models.CharField(
+        max_length=10,
+        choices=ROLES,
+        default=USER,
+    )
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-
-    def __str__(self):
-        return self.email
-
-
-    def save(self, *args, **kwargs):
-        if self.is_superuser:
-            self.role = 'admin'
-        return super().save(*args, **kwargs)
 
 
 class Category(models.Model):
@@ -156,6 +154,8 @@ class Review(models.Model):
         ordering = ('pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+    
 
     def __str__(self):
         return self.text[:15]

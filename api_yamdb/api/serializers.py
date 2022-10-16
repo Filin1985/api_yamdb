@@ -8,56 +8,42 @@ from django.contrib.auth import authenticate
 from django.conf import settings
 from django.db.models import Avg
 from django.core.mail import send_mail
-from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment
-from reviews.models import User
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
 
 
 class SignUpSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    email = serializers.EmailField()
-
-    def save(self):
-        user = User.objects.create(username=self.validated_data['username'], email=self.validated_data['email'])
-        confirmation_code = hash(user.email)
-        user.set_password(confirmation_code)
-        user.save()
-        send_mail(
-            'Confirmation Code',
-            f'Your confirmation code: {str(confirmation_code)}',
-            'django2022@gmail.com',
-            [user.email, ],
-            fail_silently=False
-        )
-        return user
-
+    """Сериализатор для запроса confirmation_code."""
+    username = serializers.CharField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
+    email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
     class Meta:
         model = User
-        fields = ('username', 'email')
+        fields = ('username', 'email')    
+
+    def validate_username(self, data):
+        """Проверяем, что пользователь не использует имя 'me'."""
+        if data.lower() == 'me':
+            raise serializers.ValidationError("Данное имя пользователя использовать запрещено!")
+        return data
 
 
 class TokenSerializer(serializers.Serializer):
+    """Сериализатор для запроса token."""
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
-
-    def save(self):
-        user = authenticate(username=self.validated_data['username'], password=self.validated_data['confirmation_code'])
-        refresh = RefreshToken.for_user(user)
-        return str(refresh.access_token)
-
+    
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User."""
+    username = serializers.CharField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
+    email = serializers.EmailField(validators=[UniqueValidator(queryset=User.objects.all())])
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
-
-    def validate_username(self, data):
-        if data == 'me':
-            raise serializers.ValidationError("Данное имя пользователя использовать запрещено!")
-        return data
+        lookup_field = 'username'
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -94,9 +80,10 @@ class TitleGetSerializer(serializers.ModelSerializer):
             'category'
         )
 
-    def get_rating(self, obj):
-        return Review.objects.filter(title=obj).aggregate(
-            Avg('score'))['score__avg']
+def get_rating(self, obj):
+    return Review.objects.filter(title=obj).aggregate(
+        Avg('score'))['score__avg']
+
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
