@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from django.conf import settings
+from django.db.models import Avg
 from django.core.mail import send_mail
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -84,6 +85,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleGetSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     category = CategorySerializer(read_only=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -91,6 +93,10 @@ class TitleGetSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre',
             'category'
         )
+
+    def get_rating(self, obj):
+        return Review.objects.filter(title=obj).aggregate(
+            Avg('score'))['score__avg']
 
 
 class TitlePostSerializer(serializers.ModelSerializer):

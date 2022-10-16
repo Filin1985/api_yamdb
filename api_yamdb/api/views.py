@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
+from django.db.models import Avg
 from rest_framework import status, filters, mixins, permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
@@ -100,7 +101,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action in ("retrieve", "list"):
             return TitleGetSerializer
         return TitlePostSerializer
 
