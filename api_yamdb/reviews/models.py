@@ -79,7 +79,6 @@ class Title(models.Model):
         verbose_name='Название произведения'
     )
     year = models.IntegerField(verbose_name='Год выпуска произведения')
-    # rating, вероятно, расчетное и в самой модели избыточно, а мт и нет???
     rating = models.IntegerField(
         null=True,
         blank=True,
@@ -93,9 +92,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        # null=True,
         blank=True,
-        # on_delete=models.SET_NULL, # миграции не проходили
         through='GenreTitle',
         verbose_name='Жанр произведения',
     )
@@ -154,8 +151,12 @@ class Review(models.Model):
         ordering = ('pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-
-    
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review'
+            ),
+        ]
 
     def __str__(self):
         return self.text[:15]

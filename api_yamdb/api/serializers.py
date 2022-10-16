@@ -85,7 +85,6 @@ class TitleGetSerializer(serializers.ModelSerializer):
             Avg('score'))['score__avg']
 
 
-
 class TitlePostSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         many=True,
