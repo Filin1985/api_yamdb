@@ -6,7 +6,9 @@ from rest_framework import filters
 from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    IsAuthenticated, IsAuthenticatedOrReadOnly
+)
 from rest_framework.response import Response
 
 from .permissions import IsAdminOnly, IsAdminOrModeratorOnly, IsReadOnly
@@ -16,12 +18,15 @@ from .serializers import (
     TitleGetSerializer,
     TitlePostSerializer,
     ReviewSerializer,
+    CommentSerializer,
     SignUpSerializer,
     TokenSerializer,
     UserSerializer
 )
 
-from reviews.models import Category, Genre, Title, GenreTitle, Review, Comment, User
+from reviews.models import (
+    Category, Genre, Title, GenreTitle, Review, Comment, User
+)
 
 
 class AuthViewSet(ViewSet):
@@ -79,7 +84,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsReadOnly,)
+    #permission_classes = (IsReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     pagination_class = PageNumberPagination
     lookup_field = 'slug'
@@ -100,28 +105,36 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitlePostSerializer
 
 
-
 class ReviewViewSet(viewsets.ModelViewSet):
-    # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
 
-    # ошибка здесь:
-    #def title_pk(self):
-    #    return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-
-    # ошибка здесь:
-    #def perform_create(self, serializer):
-    #    serializer.save(author=self.request.user, title=self.title_pk())
+    def title_pk(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
-        serializer.save(author=self.request.user, title=title)
+        serializer.save(author=self.request.user, title=self.title_pk())
 
     def get_queryset(self):
-        return Review.objects.filter(title=self.kwargs.get('title_id'))
-        # return self.title_pk().reviews
+        #return Review.objects.filter(title=self.kwargs.get('title_id'))
+        return self.title_pk().reviews.all()
 
 
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    pagination_class = PageNumberPagination
 
+    def title_pk(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
+    def review_pk(self):
+        return get_object_or_404(
+            Review, pk=self.kwargs.get('review_id'), title=self.title_pk()
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.review_pk())
+
+    def get_queryset(self):
+        #return Comment.objects.filter(review=self.kwargs.get('review_id'))
+        return self.review_pk().comments.all()
