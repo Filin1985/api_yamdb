@@ -132,11 +132,11 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails') 
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 EMAIL_HOST_USER = 'django2022@gmail.com'
 
 # Устанавливаем срок жизни токена
 SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-   'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }

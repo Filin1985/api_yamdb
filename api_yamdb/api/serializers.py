@@ -18,6 +18,7 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
+
     class Meta:
         model = User
         fields = ('username', 'email')
@@ -46,9 +47,13 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
+
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role'
+        )
         lookup_field = 'username'
 
 
