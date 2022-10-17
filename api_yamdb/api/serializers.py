@@ -80,10 +80,9 @@ class TitleGetSerializer(serializers.ModelSerializer):
             'category'
         )
 
-def get_rating(self, obj):
-    return Review.objects.filter(title=obj).aggregate(
-        Avg('score'))['score__avg']
-
+    def get_rating(self, obj):
+        return Review.objects.filter(title=obj).aggregate(
+            Avg('score'))['score__avg']
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
