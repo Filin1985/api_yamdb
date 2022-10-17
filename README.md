@@ -83,7 +83,7 @@ pip install -r requirements.txt
 python3 manage.py migrate
 ```
 
-9. Загружаем данные в models для тестирования
+7. Загружаем данные в models для тестирования
 
 ```
 python3 manage.py data
