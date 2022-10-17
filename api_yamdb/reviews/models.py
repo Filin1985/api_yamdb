@@ -1,8 +1,55 @@
-from django.contrib.auth import get_user_model
-from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
 
-User = get_user_model()
+
+class User(AbstractUser):
+    """Модель пользователя."""
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    ROLES = [
+        (ADMIN, 'Admin'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        verbose_name='Имя пользователя'
+    )
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+        verbose_name='Электронная почта'
+    )
+    bio = models.CharField(
+        max_length=160,
+        null=True,
+        blank=True,
+        verbose_name='О себе'
+    )
+    role = models.CharField(
+        max_length=10,
+        choices=ROLES,
+        default=USER,
+        verbose_name='Роль'
+    )
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class Category(models.Model):
@@ -11,6 +58,7 @@ class Category(models.Model):
     slug = models.SlugField(unique=True, verbose_name='Ключ категории')
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -25,6 +73,7 @@ class Genre(models.Model):
     slug = models.SlugField(unique=True, verbose_name='Ключ жанра')
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -39,7 +88,6 @@ class Title(models.Model):
         verbose_name='Название произведения'
     )
     year = models.IntegerField(verbose_name='Год выпуска произведения')
-    # rating, вероятно, расчетное и в самой модели избыточно, а мт и нет???
     rating = models.IntegerField(
         null=True,
         blank=True,
@@ -53,9 +101,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        # null=True,
         blank=True,
-        # on_delete=models.SET_NULL, # миграции не проходили
         through='GenreTitle',
         verbose_name='Жанр произведения',
     )
@@ -69,7 +115,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ('year',)
+        ordering = ('-year',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -95,7 +141,6 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор отзыва'
     )
-    # должна быть валидация score от 1 до 10
     score = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         verbose_name='Оценка произведения'
@@ -115,6 +160,12 @@ class Review(models.Model):
         ordering = ('pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review'
+            ),
+        ]
 
     def __str__(self):
         return self.text[:15]
