@@ -12,6 +12,7 @@ from reviews.models import (
     GenreTitle
 )
 
+
 class Command(BaseCommand):
     """Загрузка данных, для тестирования."""
     help = 'Загрузка данных'

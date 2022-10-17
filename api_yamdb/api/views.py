@@ -58,26 +58,37 @@ class AuthViewSet(ViewSet):
                 )
                 send_confirmation_code(confirmation_code, email)
                 return Response(data=serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def token(self, request, pk=None, *args, **kwargs):
         serializer = TokenSerializer(data=request.data)
         if serializer.is_valid():
-            confirmation_code = serializer.validated_data.get('confirmation_code')
+            confirmation_code = serializer.validated_data.get(
+                'confirmation_code'
+            )
             username = serializer.validated_data.get('username')
             user = get_object_or_404(User, username=username)
-            if not default_token_generator.check_token(user, confirmation_code):
+            if not default_token_generator.check_token(
+                user,
+                confirmation_code
+            ):
                 return Response(
                     data={'error': 'Невалидный токен'},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             refresh = RefreshToken.for_user(user)
             return Response(
-                data={'access': str(refresh.access_token)}, status=status.HTTP_200_OK
+                data={'access': str(refresh.access_token)},
+                status=status.HTTP_200_OK
             )
-        return Response(serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -87,13 +98,21 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOnly,)
     lookup_field = 'username'
 
-    @action(detail=False, methods=['get', 'patch'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=[IsAuthenticated]
+    )
     def me(self, request, *args, **kwargs):
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            serializer = self.get_serializer(request.user, data=request.data, partial=True)
+            serializer = self.get_serializer(
+                request.user,
+                data=request.data,
+                partial=True
+            )
             if serializer.is_valid():
                 if serializer.validated_data.get('role'):
                     serializer.validated_data['role'] = request.user.role
