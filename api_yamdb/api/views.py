@@ -1,27 +1,19 @@
-from django.shortcuts import get_object_or_404
-
 from django.contrib.auth.tokens import default_token_generator
-from django.shortcuts import render
-from django.db.models import Avg
-from rest_framework import status, filters, mixins, permissions, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from rest_framework import status, filters, mixins, permissions, viewsets
 from rest_framework.decorators import action
-from rest_framework.viewsets import ViewSet
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
-from rest_framework_simplejwt.tokens import RefreshToken
-
-from rest_framework.permissions import (
-    IsAuthenticated, IsAuthenticatedOrReadOnly
-)
-
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.viewsets import ViewSet
 
+from .filters import TitlesFilter
 from .permissions import (
     IsAdminOnly,
     IsAdminOrReadOnly,
     AdminOrModeratorOrAuthoOrIsReadOnly,
-    AdminOrUnauthorizedOrAuthenticated
 )
 from .serializers import (
     CategorySerializer,
@@ -35,11 +27,9 @@ from .serializers import (
     UserSerializer,
 )
 from .utils import send_confirmation_code
-
 from reviews.models import (
-    Category, Genre, Title, GenreTitle, Review, Comment, User
+    Category, Genre, Title, Review, User
 )
-from .filters import TitlesFilter
 
 
 class AuthViewSet(ViewSet):
@@ -62,10 +52,6 @@ class AuthViewSet(ViewSet):
                 send_confirmation_code(confirmation_code, email)
                 return Response(data=serializer.data, status=status.HTTP_200_OK)
             else:
-                confirmation_code = default_token_generator.make_token(user)
-                User.objects.filter(username=username).update(
-                    password=confirmation_code
-                )
                 confirmation_code = default_token_generator.make_token(user)
                 User.objects.filter(username=username).update(
                     password=confirmation_code
@@ -121,6 +107,7 @@ class ListCreateViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 
 class CategoryViewSet(ListCreateViewSet):
+    """Вьюсет для Category."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -131,6 +118,7 @@ class CategoryViewSet(ListCreateViewSet):
 
 
 class GenreViewSet(ListCreateViewSet):
+    """Вьюсет для Genre."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -141,6 +129,7 @@ class GenreViewSet(ListCreateViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет для Title."""
     queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
@@ -154,6 +143,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Вьюсет для Review."""
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
     permission_classes = [
@@ -172,6 +162,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет для Comment."""
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
     permission_classes = [

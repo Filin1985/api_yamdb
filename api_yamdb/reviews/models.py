@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.conf import settings
 
 
 class User(AbstractUser):
@@ -19,17 +18,24 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
+        verbose_name='Имя пользователя'
     )
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField(
+        max_length=254,
+        unique=True,
+        verbose_name='Электронная почта'
+    )
     bio = models.CharField(
         max_length=160,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name='О себе'
     )
     role = models.CharField(
         max_length=10,
         choices=ROLES,
         default=USER,
+        verbose_name='Роль'
     )
 
     @property
@@ -41,6 +47,7 @@ class User(AbstractUser):
         return self.role == self.ADMIN
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -51,6 +58,7 @@ class Category(models.Model):
     slug = models.SlugField(unique=True, verbose_name='Ключ категории')
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -65,6 +73,7 @@ class Genre(models.Model):
     slug = models.SlugField(unique=True, verbose_name='Ключ жанра')
 
     class Meta:
+        ordering = ['-id']
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
