@@ -34,7 +34,7 @@ from reviews.models import (
 
 class AuthViewSet(ViewSet):
     """Вьюсет для отправки токена при регистрации."""
-    @action(detail=False, methods=['post'],  permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def signup(self, request, pk=None, *args, **kwargs):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
@@ -50,14 +50,20 @@ class AuthViewSet(ViewSet):
                     password=confirmation_code, is_active=True
                 )
                 send_confirmation_code(confirmation_code, email)
-                return Response(data=serializer.data, status=status.HTTP_200_OK)
+                return Response(
+                    data=serializer.data,
+                    status=status.HTTP_200_OK
+                )
             else:
                 confirmation_code = default_token_generator.make_token(user)
                 User.objects.filter(username=username).update(
                     password=confirmation_code
                 )
                 send_confirmation_code(confirmation_code, email)
-                return Response(data=serializer.data, status=status.HTTP_200_OK)
+                return Response(
+                    data=serializer.data,
+                    status=status.HTTP_200_OK
+                )
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
