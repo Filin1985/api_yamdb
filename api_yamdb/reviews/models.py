@@ -1,5 +1,6 @@
+from wsgiref.validate import validator
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 
 
@@ -9,13 +10,15 @@ class User(AbstractUser):
     MODERATOR = 'moderator'
     USER = 'user'
     ROLES = [
-        (ADMIN, 'Admin'),
-        (MODERATOR, 'Moderator'),
-        (USER, 'User'),
+        (ADMIN, 'Админ'),
+        (MODERATOR, 'Модератор'),
+        (USER, 'Пользователь'),
     ]
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+    USERNAME_VALIDATOR = RegexValidator(r'^[\w.@+-]+\Z')
     username = models.CharField(
+        validators=[USERNAME_VALIDATOR],
         max_length=150,
         unique=True,
         verbose_name='Имя пользователя'
@@ -25,14 +28,16 @@ class User(AbstractUser):
         unique=True,
         verbose_name='Электронная почта'
     )
-    bio = models.CharField(
-        max_length=160,
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
+    confirmation_code = models.CharField(max_length=120, default='12345')
+    bio = models.TextField(
         null=True,
         blank=True,
         verbose_name='О себе'
     )
     role = models.CharField(
-        max_length=10,
+        max_length=max(len(value) for value in ROLES),
         choices=ROLES,
         default=USER,
         verbose_name='Роль'
@@ -44,12 +49,22 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ADMIN
+        return (
+            self.role == self.ADMIN 
+            or self.is_superuser 
+            or self.is_staff
+        )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['username']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(username__iexact="me"),
+                name="me_is_restricted"
+            )
+        ]
 
 
 class Category(models.Model):

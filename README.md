@@ -1,8 +1,13 @@
 # Проект API_YaTube
 
-##Описание проекта\*\*
+## Описание проекта\*\*
 
 Проект YaMDb собирает отзывы (Review) пользователей на произведения (Title). Произведения делятся на категории: "Книги", "Фильмы", "Музыка". Список категорий (Category) может быть расширен.
+
+## Авторы проекта\*\*
+
+1. Артем Баландин https://github.com/ArtemBalandin81
+2. Марат Ихсанов https://github.com/Filin1985
 
 ## Ресурсы API YaMDb
 
@@ -86,7 +91,7 @@ python3 manage.py migrate
 7. Загружаем данные в models для тестирования
 
 ```
-python3 manage.py data
+python3 manage.py getmockdata
 ```
 
 8. Запускаем проект
@@ -100,3 +105,7 @@ python3 manage.py runserver
 1. Получить (GET), создать пользователя (POST) - /api/v1/users/
 2. Получить (GET), удалить (DELETE) пользователя по username - /api/v1/users/{username}/
 3. Получение (GET), удаление (DELETE), изменение отзывов (PUT, PATCH) по id - /api/v1/titles/{title_id}/reviews/
+
+### Ссылка на проект
+
+[localhost:8000](http://localhost:8000/redoc)
