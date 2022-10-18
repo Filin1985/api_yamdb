@@ -122,29 +122,23 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class ListCreateViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                         mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    pass
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    pagination_class = PageNumberPagination
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class CategoryViewSet(ListCreateViewSet):
     """Вьюсет для Category."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    pagination_class = PageNumberPagination
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
 class GenreViewSet(ListCreateViewSet):
     """Вьюсет для Genre."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    pagination_class = PageNumberPagination
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):

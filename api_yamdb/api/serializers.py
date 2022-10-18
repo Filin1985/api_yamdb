@@ -81,15 +81,15 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleGetSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Title при GET запросах."""
-    genre = GenreSerializer(read_only=True, many=True)
-    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
     rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre',
-            'category'
+        fields = '__all__'
+        read_only_fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
 
     def get_rating(self, obj):
@@ -117,9 +117,10 @@ class TitlePostSerializer(serializers.ModelSerializer):
         )
 
     def validate_year(self, value):
+        current_year = datetime.date.today().year
         if datetime.date.today().year < value:
             raise serializers.ValidationError(
-                'Год выпуска не может быть больше текущего'
+                f'Год выпуска {value} не может быть больше {current_year}'
             )
         return value
 
@@ -138,11 +139,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context['request']
-        title = get_object_or_404(
-            Title,
-            pk=self.context['view'].kwargs.get('title_id')
-        )
         if request.method == 'POST':
+            title = get_object_or_404(
+                Title,
+                pk=self.context['view'].kwargs.get('title_id')
+            )
             if Review.objects.filter(
                 title=title,
                 author=self.context['request'].user
