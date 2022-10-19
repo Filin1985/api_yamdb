@@ -1,3 +1,4 @@
+import datetime
 from wsgiref.validate import validator
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
@@ -70,10 +71,12 @@ class User(AbstractUser):
 class Category(models.Model):
     """Модель категории (типа) произведения (фильм, книга, музыка)."""
     name = models.CharField(max_length=256, verbose_name='Название категории')
-    slug = models.SlugField(unique=True, verbose_name='Ключ категории')
+    slug = models.SlugField(
+        max_length=256, unique=True, verbose_name='Ключ категории'
+    )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['name']
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -85,10 +88,12 @@ class Genre(models.Model):
     """Модель жанра произведения. Одно произведение может быть привязано
      к нескольким жанрам."""
     name = models.CharField(max_length=256, verbose_name='Название жанра')
-    slug = models.SlugField(unique=True, verbose_name='Ключ жанра')
+    slug = models.SlugField(
+        max_length=256, unique=True, verbose_name='Ключ жанра'
+    )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['name']
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -98,20 +103,21 @@ class Genre(models.Model):
 
 class Title(models.Model):
     """Модель произведения, к которым пишут отзывы."""
-    name = models.CharField(
-        max_length=256,
+    name = models.TextField(
         verbose_name='Название произведения'
     )
-    year = models.IntegerField(verbose_name='Год выпуска произведения')
+    year = models.IntegerField(
+        validators=[MaxValueValidator(datetime.date.today().year)],
+        verbose_name='Год выпуска произведения'
+    )
     rating = models.IntegerField(
         null=True,
         blank=True,
         verbose_name='Рейтинг произведения'
     )
-    description = models.CharField(
+    description = models.TextField(
         null=True,
         blank=True,
-        max_length=256,
         verbose_name='Описание произведения'
     )
     genre = models.ManyToManyField(
@@ -130,7 +136,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ('-year',)
+        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -172,7 +178,7 @@ class Review(models.Model):
     )
 
     class Meta:
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
