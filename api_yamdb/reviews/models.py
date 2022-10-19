@@ -74,10 +74,12 @@ class Genre(models.Model):
     """Модель жанра произведения. Одно произведение может быть привязано
      к нескольким жанрам."""
     name = models.CharField(max_length=256, verbose_name='Название жанра')
-    slug = models.SlugField(unique=True, verbose_name='Ключ жанра')
+    slug = models.SlugField(
+        max_length=256, unique=True, verbose_name='Ключ жанра'
+    )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ['name']
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -99,10 +101,9 @@ class Title(models.Model):
         blank=True,
         verbose_name='Рейтинг произведения'
     )
-    description = models.CharField(
+    description = models.TextField(
         null=True,
         blank=True,
-        max_length=256,
         verbose_name='Описание произведения'
     )
     genre = models.ManyToManyField(
@@ -121,7 +122,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ('-year',)
+        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -163,7 +164,7 @@ class Review(models.Model):
     )
 
     class Meta:
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
