@@ -1,7 +1,6 @@
 import datetime
 
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
@@ -17,7 +16,10 @@ class SignUpSerializer(serializers.Serializer):
         fields = ('username', 'email')
 
     def validate_username(self, data):
-        """Проверяем, что пользователь не использует имя 'me' и уникальность username."""
+        """
+        Проверяем, что пользователь не использует имя 'me' 
+        и уникальность username.
+        """
         if data.lower() == 'me':
             raise serializers.ValidationError(
                 "Данное имя пользователя использовать запрещено!"
@@ -73,7 +75,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_email(self, data):
         if User.objects.filter(email=data).exists():
-            raise serializers.ValidationError("Пользователь с такими email уже есть!")
+            raise serializers.ValidationError(
+                "Пользователь с такими email уже есть!"
+            )
         return data
 
 
