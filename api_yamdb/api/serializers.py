@@ -17,7 +17,7 @@ class SignUpSerializer(serializers.Serializer):
 
     def validate_username(self, data):
         """
-        Проверяем, что пользователь не использует имя 'me' 
+        Проверяем, что пользователь не использует имя 'me'
         и уникальность username.
         """
         if data.lower() == 'me':
