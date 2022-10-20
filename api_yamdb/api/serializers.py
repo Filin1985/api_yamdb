@@ -4,24 +4,31 @@ from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
 
 
 class SignUpSerializer(serializers.Serializer):
     """Сериализатор для запроса confirmation_code."""
-    username = serializers.CharField(
-        required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
+    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
+    email = serializers.EmailField(max_length=254, required=True)
 
     class Meta:
-        model = User
         fields = ('username', 'email')
+
+    def validate_username(self, data):
+        """Проверяем, что пользователь не использует имя 'me' и уникальность username."""
+        if data.lower() == 'me':
+            raise serializers.ValidationError(
+                "Данное имя пользователя использовать запрещено!"
+            )
+        return data
+
+
+class TokenSerializer(serializers.Serializer):
+    """Сериализатор для запроса token."""
+    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
+    confirmation_code = serializers.CharField(max_length=150)
 
     def validate_username(self, data):
         """Проверяем, что пользователь не использует имя 'me'."""
@@ -32,20 +39,16 @@ class SignUpSerializer(serializers.Serializer):
         return data
 
 
-class TokenSerializer(serializers.Serializer):
-    """Сериализатор для запроса token."""
-    username = serializers.CharField()
-    confirmation_code = serializers.CharField()
-
-
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User."""
-    username = serializers.CharField(
-        required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())]
+    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
+    first_name = serializers.CharField(max_length=150, required=False)
+    last_name = serializers.CharField(max_length=150, required=False)
+    email = serializers.CharField(max_length=254)
+    role = serializers.ChoiceField(
+        choices=User.ROLES,
+        default=User.USER,
+        required=False
     )
 
     class Meta:
@@ -55,6 +58,23 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name', 'bio', 'role'
         )
         lookup_field = 'username'
+
+    def validate_username(self, data):
+        """Проверяем, что пользователь не использует имя 'me'."""
+        if data.lower() == 'me':
+            raise serializers.ValidationError(
+                "Данное имя пользователя использовать запрещено!"
+            )
+        if User.objects.filter(username=data).exists():
+            raise serializers.ValidationError(
+                "Пользователь с таким именем уже есть!"
+            )
+        return data
+
+    def validate_email(self, data):
+        if User.objects.filter(email=data).exists():
+            raise serializers.ValidationError("Пользователь с такими email уже есть!")
+        return data
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -81,20 +101,16 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleGetSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Title при GET запросах."""
-    genre = GenreSerializer(read_only=True, many=True)
-    category = CategorySerializer(read_only=True)
-    rating = serializers.SerializerMethodField()
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+    rating = serializers.IntegerField(source='reviews__score__avg')
 
     class Meta:
         model = Title
-        fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre',
-            'category'
+        fields = '__all__'
+        read_only_fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-
-    def get_rating(self, obj):
-        return Review.objects.filter(title=obj).aggregate(
-            Avg('score'))['score__avg']
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
@@ -117,9 +133,10 @@ class TitlePostSerializer(serializers.ModelSerializer):
         )
 
     def validate_year(self, value):
+        current_year = datetime.date.today().year
         if datetime.date.today().year < value:
             raise serializers.ValidationError(
-                'Год выпуска не может быть больше текущего'
+                f'Год выпуска {value} не может быть больше {current_year}'
             )
         return value
 
@@ -138,11 +155,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context['request']
-        title = get_object_or_404(
-            Title,
-            pk=self.context['view'].kwargs.get('title_id')
-        )
         if request.method == 'POST':
+            title = get_object_or_404(
+                Title,
+                pk=self.context['view'].kwargs.get('title_id')
+            )
             if Review.objects.filter(
                 title=title,
                 author=self.context['request'].user
