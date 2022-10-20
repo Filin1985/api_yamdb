@@ -1,4 +1,3 @@
-from unittest import result
 from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
@@ -45,7 +44,7 @@ def signup(request):
         user, _created = User.objects.get_or_create(
             username=username,
             email=email,
-            is_active=False 
+            is_active=False
         )
     except Exception:
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
@@ -58,6 +57,7 @@ def signup(request):
         data=serializer.data,
         status=status.HTTP_200_OK
     )
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
