@@ -1,5 +1,6 @@
 from unittest import result
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import status, filters, mixins, permissions, viewsets
@@ -137,7 +138,9 @@ class GenreViewSet(ListCreateViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для Title."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        Avg('reviews__score')
+    ).order_by('name')
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     pagination_class = PageNumberPagination
