@@ -1,7 +1,10 @@
 import datetime
-from wsgiref.validate import validator
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator,
+    RegexValidator
+)
 from django.db import models
 
 
@@ -51,8 +54,8 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return (
-            self.role == self.ADMIN 
-            or self.is_superuser 
+            self.role == self.ADMIN
+            or self.is_superuser
             or self.is_staff
         )
 
@@ -158,7 +161,6 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        #related_name='reviews',
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
