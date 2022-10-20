@@ -103,7 +103,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Title при GET запросах."""
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(source='reviews__score__avg')
 
     class Meta:
         model = Title
@@ -111,10 +111,6 @@ class TitleGetSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-
-    def get_rating(self, obj):
-        return Review.objects.filter(title=obj).aggregate(
-            Avg('score'))['score__avg']
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
