@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
+from reviews.validators import validate_year
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -108,9 +109,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
-        read_only_fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
-        )
+        read_only_fields = ['__all__']
 
 
 class TitlePostSerializer(serializers.ModelSerializer):

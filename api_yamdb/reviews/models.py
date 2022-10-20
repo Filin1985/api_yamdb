@@ -1,9 +1,10 @@
-from datetime import date
 from wsgiref.validate import validator
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
+
+from .validators import validate_year
 
 
 class User(AbstractUser):
@@ -101,15 +102,6 @@ class Genre(BaseCategoryGenre):
         verbose_name_plural = 'Жанры'
 
 
-def validate_year(value):
-    current_year = date.today().year
-    if current_year < value:
-        raise ValidationError(
-            f'Год произведения {value} не может быть больше {current_year}'
-        )
-    return value
-
-
 class Title(models.Model):
     """Модель произведения, к которым пишут отзывы."""
     name = models.TextField(
@@ -168,7 +160,7 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="%(class)s_related",
+        related_name="%(class)s",
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
