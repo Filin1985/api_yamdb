@@ -1,6 +1,7 @@
-import datetime
+from datetime import date
 from wsgiref.validate import validator
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 
@@ -86,7 +87,7 @@ class BaseCategoryGenre(models.Model):
 class Category(BaseCategoryGenre):
     """Модель категории (типа) произведения (фильм, книга, музыка)."""
 
-    class Meta:
+    class Meta(BaseCategoryGenre.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -95,9 +96,18 @@ class Genre(BaseCategoryGenre):
     """Модель жанра произведения. Одно произведение может быть привязано
      к нескольким жанрам."""
 
-    class Meta:
+    class Meta(BaseCategoryGenre.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
+
+
+def validate_year(value):
+    current_year = date.today().year
+    if current_year < value:
+        raise ValidationError(
+            f'Год произведения {value} не может быть больше {current_year}'
+        )
+    return value
 
 
 class Title(models.Model):
@@ -106,7 +116,7 @@ class Title(models.Model):
         verbose_name='Название произведения'
     )
     year = models.IntegerField(
-        validators=[MaxValueValidator(datetime.date.today().year)],
+        validators=[validate_year],
         verbose_name='Год выпуска произведения'
     )
     rating = models.IntegerField(
@@ -158,7 +168,7 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        #related_name='reviews',
+        related_name="%(class)s_related",
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
@@ -171,7 +181,7 @@ class BaseReviewComment(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text[:15]
+        return (self.text[:15], self.author, self.pub_date)
 
 
 class Review(BaseReviewComment):
@@ -187,7 +197,7 @@ class Review(BaseReviewComment):
         verbose_name='Произведение'
     )
 
-    class Meta:
+    class Meta(BaseReviewComment.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -208,6 +218,6 @@ class Comment(BaseReviewComment):
         verbose_name="Комментируемый отзыв",
     )
 
-    class Meta:
+    class Meta(BaseReviewComment.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
