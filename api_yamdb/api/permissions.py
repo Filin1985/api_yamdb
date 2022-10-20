@@ -4,9 +4,7 @@ from reviews.models import User
 
 class IsAdminOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            return (request.user.role == User.ADMIN) or request.user.is_superuser
-
+        return (request.user.is_authenticated and request.user.role == User.ADMIN) or request.user.is_superuser
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
