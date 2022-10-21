@@ -72,16 +72,19 @@ class TitleGetSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Title при GET запросах."""
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.IntegerField(source='reviews__score__avg')
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = '__all__'
-        read_only_fields = ['__all__']
+        read_only_fields = ('__all__',)
+
+    def get_rating(self, data):
+        return data.score
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Title при POST, PATCH, PUT, FELETE запросах."""
+    """Сериализатор для модели Title при POST, PATCH, PUT, DELETE запросах."""
     genre = serializers.SlugRelatedField(
         many=True,
         queryset=Genre.objects.all(),
