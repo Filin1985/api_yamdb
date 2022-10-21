@@ -18,10 +18,10 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'year', 'rating', 'description', 'category')
+    list_display = ('pk', 'name', 'year', 'description', 'category')
     list_editable = ('name', 'year', 'description', 'category',)
     search_fields = ('name', 'description')
-    list_filter = ('year', 'rating', 'category')
+    list_filter = ('year', 'category')
     empty_value_display = '-пусто-'
 
 
