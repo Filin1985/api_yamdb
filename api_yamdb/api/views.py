@@ -46,7 +46,7 @@ def signup(request):
             username=username,
             email=email,
         )
-    except IntegrityError as error:
+    except IntegrityError:
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = default_token_generator.make_token(user)
     user.confirmation_code = confirmation_code
