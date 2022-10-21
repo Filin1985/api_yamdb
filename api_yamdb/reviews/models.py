@@ -1,11 +1,12 @@
-import datetime
+from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
     RegexValidator
 )
-from django.db import models
+
+from .validators import validate_year, check_username
 
 
 class User(AbstractUser):
@@ -20,9 +21,8 @@ class User(AbstractUser):
     ]
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    USERNAME_VALIDATOR = RegexValidator(r'^[\w.@+-]+\Z')
     username = models.CharField(
-        validators=[USERNAME_VALIDATOR],
+        validators=[check_username],
         max_length=150,
         unique=True,
         verbose_name='Имя пользователя'
@@ -32,8 +32,8 @@ class User(AbstractUser):
         unique=True,
         verbose_name='Электронная почта'
     )
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
     confirmation_code = models.CharField(max_length=120, default='12345')
     bio = models.TextField(
         null=True,
@@ -41,7 +41,7 @@ class User(AbstractUser):
         verbose_name='О себе'
     )
     role = models.CharField(
-        max_length=max(len(value) for value in ROLES),
+        max_length=max(len(value) for value, _ in ROLES),
         choices=ROLES,
         default=USER,
         verbose_name='Роль'
@@ -55,7 +55,6 @@ class User(AbstractUser):
     def is_admin(self):
         return (
             self.role == self.ADMIN
-            or self.is_superuser
             or self.is_staff
         )
 
@@ -63,12 +62,6 @@ class User(AbstractUser):
         ordering = ['username']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        constraints = [
-            models.CheckConstraint(
-                check=~models.Q(username__iexact="me"),
-                name="me_is_restricted"
-            )
-        ]
 
 
 class BaseCategoryGenre(models.Model):
@@ -89,7 +82,7 @@ class BaseCategoryGenre(models.Model):
 class Category(BaseCategoryGenre):
     """Модель категории (типа) произведения (фильм, книга, музыка)."""
 
-    class Meta:
+    class Meta(BaseCategoryGenre.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -98,7 +91,7 @@ class Genre(BaseCategoryGenre):
     """Модель жанра произведения. Одно произведение может быть привязано
      к нескольким жанрам."""
 
-    class Meta:
+    class Meta(BaseCategoryGenre.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -109,7 +102,7 @@ class Title(models.Model):
         verbose_name='Название произведения'
     )
     year = models.IntegerField(
-        validators=[MaxValueValidator(datetime.date.today().year)],
+        validators=[validate_year],
         verbose_name='Год выпуска произведения'
     )
     rating = models.IntegerField(
@@ -173,7 +166,7 @@ class BaseReviewComment(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text[:15]
+        return (self.text[:15], self.author, self.pub_date)
 
 
 class Review(BaseReviewComment):
@@ -189,7 +182,7 @@ class Review(BaseReviewComment):
         verbose_name='Произведение'
     )
 
-    class Meta:
+    class Meta(BaseReviewComment.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -210,6 +203,6 @@ class Comment(BaseReviewComment):
         verbose_name="Комментируемый отзыв",
     )
 
-    class Meta:
+    class Meta(BaseReviewComment.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
