@@ -134,13 +134,13 @@ class GenreViewSet(ListCreateViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для Title."""
-    queryset = Title.objects.all().annotate(
-        Avg('reviews__score')
-    ).order_by('name')
+    queryset = Title.objects.all().annotate(score=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
+    ordering_fileds = '__all__'
+    ordering = ('name',)
 
     def get_serializer_class(self):
         if self.action in ("retrieve", "list"):
