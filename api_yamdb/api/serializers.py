@@ -1,7 +1,6 @@
 import datetime
 
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -15,6 +14,7 @@ EMAIL_MAX_LENGTH = 254
 
 class SignUpSerializer(serializers.Serializer):
     """Сериализатор для запроса confirmation_code."""
+
     username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[check_username])
     email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
 

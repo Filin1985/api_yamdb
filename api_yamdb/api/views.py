@@ -57,6 +57,7 @@ def signup(request):
         status=status.HTTP_200_OK
     )
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def token(request):

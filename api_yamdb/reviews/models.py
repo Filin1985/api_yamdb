@@ -1,9 +1,10 @@
-import datetime
-
-from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator,
+    RegexValidator
+)
 
 from .validators import validate_year, check_username
 
@@ -153,7 +154,6 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="%(class)s",
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
