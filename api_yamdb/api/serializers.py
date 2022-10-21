@@ -86,8 +86,14 @@ class TitleGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = '__all__'
-        read_only_fields = ('__all__',)
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre',
+            'category'
+        )
+        read_only_fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre',
+            'category'
+        )
 
     def get_rating(self, data):
         return data.score
@@ -131,7 +137,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method == 'POST':
             if Review.objects.filter(
                 title=get_object_or_404(
-                    Title,pk=self.context['view'].kwargs.get('title_id')
+                    Title, pk=self.context['view'].kwargs.get('title_id')
                 ),
                 author=self.context['request'].user
             ).exists():
