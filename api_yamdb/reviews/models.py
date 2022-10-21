@@ -1,10 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import (
-    MinValueValidator,
-    MaxValueValidator,
-    RegexValidator
-)
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
 
 from .validators import validate_year, check_username
 
