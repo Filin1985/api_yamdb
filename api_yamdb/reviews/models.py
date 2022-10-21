@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 
-from .validators import validate_username
+from .validators import check_username
 
 class User(AbstractUser):
     """Модель пользователя."""
@@ -18,7 +18,7 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     username = models.CharField(
-        validators=[validate_username],
+        validators=[check_username],
         max_length=150,
         unique=True,
         verbose_name='Имя пользователя'

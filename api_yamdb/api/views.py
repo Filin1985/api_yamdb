@@ -1,6 +1,5 @@
-from sqlite3 import DataError, DatabaseError, IntegrityError, InternalError, OperationalError
 from django.contrib.auth.tokens import default_token_generator
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
+from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import status, filters, mixins, permissions, viewsets
@@ -46,7 +45,7 @@ def signup(request):
             username=username,
             email=email,
         )
-    except Exception:
+    except IntegrityError as error:
         return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = default_token_generator.make_token(user)
     user.confirmation_code = confirmation_code

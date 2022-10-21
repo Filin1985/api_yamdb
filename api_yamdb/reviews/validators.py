@@ -1,9 +1,10 @@
 import re
+
 from django.core.exceptions import ValidationError
 
 REGEX_USERNAME = re.compile(r'^[\w.@+-]+\Z')
 
-def validate_username(value):
+def check_username(value):
     """Проверяем, что пользователь не использует имя 'me'."""
     if value == 'me':
         raise ValidationError(

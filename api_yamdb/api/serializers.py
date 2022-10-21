@@ -4,29 +4,29 @@ from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
-from reviews.validators import validate_username
+from reviews.validators import check_username
 
 NAME_MAX_LENGTH = 150
 EMAIL_MAX_LENGTH = 254
 
 class SignUpSerializer(serializers.Serializer):
     """Сериализатор для запроса confirmation_code."""
-    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[validate_username])
+    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[check_username])
     email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
 
 
 class TokenSerializer(serializers.Serializer):
     """Сериализатор для запроса token."""
-    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[validate_username])
+    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[check_username])
     confirmation_code = serializers.CharField(max_length=150)
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User."""
-    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[validate_username])
+    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[check_username])
 
     class Meta:
         model = User
