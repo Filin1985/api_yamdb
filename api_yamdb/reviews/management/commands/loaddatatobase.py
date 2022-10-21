@@ -45,7 +45,7 @@ class Command(BaseCommand):
                 name=row['name'],
                 year=row['year'],
                 category=Category.objects.get(id=row['category']),
-            ) 
+            )
             title.save()
 
         for row in DictReader(open('./static/data/review.csv')):
