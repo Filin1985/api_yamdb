@@ -123,6 +123,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
         slug_field='slug'
     )
+    year = serializers.IntegerField(validators=[validate_year])
 
     class Meta:
         model = Title
@@ -130,14 +131,6 @@ class TitlePostSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre',
             'category'
         )
-
-    def validate_year(self, value):
-        current_year = datetime.date.today().year
-        if datetime.date.today().year < value:
-            raise serializers.ValidationError(
-                f'Год выпуска {value} не может быть больше {current_year}'
-            )
-        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):
