@@ -1,10 +1,11 @@
-from wsgiref.validate import validator
+import datetime
+
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 
-from .validators import validate_year
+from .validators import validate_year, check_username
 
 
 class User(AbstractUser):
@@ -19,9 +20,8 @@ class User(AbstractUser):
     ]
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
-    USERNAME_VALIDATOR = RegexValidator(r'^[\w.@+-]+\Z')
     username = models.CharField(
-        validators=[USERNAME_VALIDATOR],
+        validators=[check_username],
         max_length=150,
         unique=True,
         verbose_name='Имя пользователя'
@@ -31,8 +31,8 @@ class User(AbstractUser):
         unique=True,
         verbose_name='Электронная почта'
     )
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
     confirmation_code = models.CharField(max_length=120, default='12345')
     bio = models.TextField(
         null=True,
@@ -40,7 +40,7 @@ class User(AbstractUser):
         verbose_name='О себе'
     )
     role = models.CharField(
-        max_length=max(len(value) for value in ROLES),
+        max_length=max(len(value) for value, _ in ROLES),
         choices=ROLES,
         default=USER,
         verbose_name='Роль'
@@ -53,8 +53,7 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return (
-            self.role == self.ADMIN 
-            or self.is_superuser 
+            self.role == self.ADMIN
             or self.is_staff
         )
 
@@ -62,12 +61,6 @@ class User(AbstractUser):
         ordering = ['username']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        constraints = [
-            models.CheckConstraint(
-                check=~models.Q(username__iexact="me"),
-                name="me_is_restricted"
-            )
-        ]
 
 
 class BaseCategoryGenre(models.Model):

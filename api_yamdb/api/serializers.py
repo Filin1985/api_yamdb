@@ -4,53 +4,30 @@ from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
-from reviews.validators import validate_year
+from reviews.validators import validate_year, check_username
 
+
+NAME_MAX_LENGTH = 150
+EMAIL_MAX_LENGTH = 254
 
 class SignUpSerializer(serializers.Serializer):
     """Сериализатор для запроса confirmation_code."""
-    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
-    email = serializers.EmailField(max_length=254, required=True)
-
-    class Meta:
-        fields = ('username', 'email')
-
-    def validate_username(self, data):
-        """Проверяем, что пользователь не использует имя 'me' и уникальность username."""
-        if data.lower() == 'me':
-            raise serializers.ValidationError(
-                "Данное имя пользователя использовать запрещено!"
-            )
-        return data
+    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[check_username])
+    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH, required=True)
 
 
 class TokenSerializer(serializers.Serializer):
     """Сериализатор для запроса token."""
-    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
+    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[check_username])
     confirmation_code = serializers.CharField(max_length=150)
-
-    def validate_username(self, data):
-        """Проверяем, что пользователь не использует имя 'me'."""
-        if data.lower() == 'me':
-            raise serializers.ValidationError(
-                "Данное имя пользователя использовать запрещено!"
-            )
-        return data
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User."""
-    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z', max_length=150)
-    first_name = serializers.CharField(max_length=150, required=False)
-    last_name = serializers.CharField(max_length=150, required=False)
-    email = serializers.CharField(max_length=254)
-    role = serializers.ChoiceField(
-        choices=User.ROLES,
-        default=User.USER,
-        required=False
-    )
+    username = serializers.CharField(max_length=NAME_MAX_LENGTH, required=True, validators=[check_username])
 
     class Meta:
         model = User
@@ -61,20 +38,11 @@ class UserSerializer(serializers.ModelSerializer):
         lookup_field = 'username'
 
     def validate_username(self, data):
-        """Проверяем, что пользователь не использует имя 'me'."""
-        if data.lower() == 'me':
-            raise serializers.ValidationError(
-                "Данное имя пользователя использовать запрещено!"
-            )
+        """Проверяем, что пользователь не использует имя 'me' и уникальность username."""
         if User.objects.filter(username=data).exists():
             raise serializers.ValidationError(
                 "Пользователь с таким именем уже есть!"
             )
-        return data
-
-    def validate_email(self, data):
-        if User.objects.filter(email=data).exists():
-            raise serializers.ValidationError("Пользователь с такими email уже есть!")
         return data
 
 
