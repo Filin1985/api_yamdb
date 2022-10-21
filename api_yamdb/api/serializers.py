@@ -7,7 +7,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Genre, Title, Review, Comment, User
-from reviews.validators import check_username
+from reviews.validators import validate_year, check_username
+
 
 NAME_MAX_LENGTH = 150
 EMAIL_MAX_LENGTH = 254
@@ -76,9 +77,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
-        read_only_fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
-        )
+        read_only_fields = ['__all__']
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
@@ -92,6 +91,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
         slug_field='slug'
     )
+    year = serializers.IntegerField(validators=[validate_year])
 
     class Meta:
         model = Title
@@ -99,14 +99,6 @@ class TitlePostSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre',
             'category'
         )
-
-    def validate_year(self, value):
-        current_year = datetime.date.today().year
-        if datetime.date.today().year < value:
-            raise serializers.ValidationError(
-                f'Год выпуска {value} не может быть больше {current_year}'
-            )
-        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -124,12 +116,11 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context['request']
         if request.method == 'POST':
-            title = get_object_or_404(
+            if Review.objects.filter(
+                title=get_object_or_404(
                 Title,
                 pk=self.context['view'].kwargs.get('title_id')
-            )
-            if Review.objects.filter(
-                title=title,
+            ),
                 author=self.context['request'].user
             ).exists():
                 raise ValidationError(
