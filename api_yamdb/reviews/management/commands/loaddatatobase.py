@@ -71,7 +71,7 @@ class Command(BaseCommand):
                     pub_date=row['pub_date'])
 
         with open('static/data/comments.csv', 'r',
-                  encoding='utf-8') as csvfile:
+                encoding='utf-8') as csvfile:
             dict_reader = DictReader(csvfile)
             for row in dict_reader:
                 Comment.objects.get_or_create(
