@@ -39,7 +39,7 @@ def open_file(file):
     with open(file_path, encoding='utf-8') as csv_file:
         return list(csv.reader(csv_file))
 
-    
+
 def load_file(file, model_type):
     data = open_file(file)
     rows = data[1:]
