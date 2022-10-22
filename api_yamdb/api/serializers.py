@@ -8,8 +8,6 @@ from reviews.models import Category, Genre, Title, Review, Comment, User
 from reviews.validators import validate_year, check_username
 
 
-
-
 class SignUpSerializer(serializers.Serializer):
     """Сериализатор для запроса confirmation_code."""
     username = serializers.CharField(
