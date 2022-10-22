@@ -1,6 +1,8 @@
-from csv import DictReader
+import csv
+import os
 
 from django.core.management import BaseCommand
+from django.db import IntegrityError
 
 from reviews.models import (
     User,
@@ -12,6 +14,48 @@ from reviews.models import (
     GenreTitle
 )
 
+FILES_DIR = 'static/data'
+
+CLASSES = {
+    'users.csv': User,
+    'category.csv': Category,
+    'titles.csv': Title,
+    'review.csv': Review,
+    'comments.csv': Comment,
+    'genre.csv': Genre,
+    'genre_title.csv': GenreTitle
+}
+
+FOREIGN_FIELDS = {
+    'category': ('category', Category),
+    'title_id': ('title', Title),
+    'genre_id': ('genre', Genre),
+    'author': ('author', User),
+    'review_id': ('review', Review),
+}
+
+def open_file(file):
+    file_path = os.path.join(FILES_DIR, file)
+    with open(file_path, encoding='utf-8') as csv_file:
+        return list(csv.reader(csv_file))
+
+def load_file(file, model_type):
+    data = open_file(file)
+    rows = data[1:]
+    for row in rows:
+        csv_data = dict(zip(data[0], row))
+        new_data_csv = dict(csv_data)
+        for key, value in csv_data.items():
+            if key in FOREIGN_FIELDS.keys():
+                print(key)
+                print(csv_data)
+                new_key = FOREIGN_FIELDS[key][0]
+                print(new_key)
+                new_data_csv[new_key] = FOREIGN_FIELDS[key][1].objects.get(pk=value)
+        print(new_data_csv)
+        database = model_type(**new_data_csv)
+        database.save()
+
 
 class Command(BaseCommand):
     """Загрузка данных, для тестирования."""
@@ -19,64 +63,5 @@ class Command(BaseCommand):
     help = 'Загрузка данных'
 
     def handle(self, *args, **options):
-        with open('static/data/users.csv', 'r', encoding='utf-8') as csvfile:
-            dict_reader = DictReader(csvfile)
-            for row in dict_reader:
-                User.objects.get_or_create(
-                    id=row['id'],
-                    username=row['username'],
-                    email=row['email'],
-                    role=row['role'],
-                    bio=row['bio'],
-                    first_name=row['first_name'],
-                    last_name=row['last_name'])
-
-        with open('static/data/category.csv', 'r',
-                  encoding='utf-8') as csvfile:
-            dict_reader = DictReader(csvfile)
-            for row in dict_reader:
-                Category.objects.get_or_create(
-                    name=row['name'],
-                    slug=row['slug'])
-
-        with open('static/data/genre.csv', 'r', encoding='utf-8') as csvfile:
-            dict_reader = DictReader(csvfile)
-            for row in dict_reader:
-                Genre.objects.get_or_create(
-                    name=row['name'],
-                    slug=row['slug'])
-
-        with open('static/data/titles.csv', 'r', encoding='utf-8') as csvfile:
-            dict_reader = DictReader(csvfile)
-            for row in dict_reader:
-                Title.objects.get_or_create(
-                    name=row['name'],
-                    year=row['year'],
-                    category_id=row['category'])
-
-        with open('static/data/genre_title.csv') as csvfile:
-            dict_reader = DictReader(csvfile)
-            for row in dict_reader:
-                title = GenreTitle.objects.get(id=row['title_id'])
-                title.genre.add(row['genre_id'])
-
-        with open('static/data/review.csv', 'r', encoding='utf-8') as csvfile:
-            dict_reader = DictReader(csvfile)
-            for row in dict_reader:
-                Review.objects.get_or_create(
-                    title_id=row['title_id'],
-                    text=row['text'],
-                    author_id=row['author'],
-                    score=row['score'],
-                    pub_date=row['pub_date'])
-
-        with open(
-            'static/data/comments.csv', 'r', encoding='utf-8'
-        ) as csvfile:
-            dict_reader = DictReader(csvfile)
-            for row in dict_reader:
-                Comment.objects.get_or_create(
-                    review_id=row['review_id'],
-                    text=row['text'],
-                    author_id=row['author'],
-                    pub_date=row['pub_date'])
+        for key, value in CLASSES.items():
+            load_file(key, value)
