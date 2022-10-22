@@ -7,7 +7,7 @@ from api_yamdb.settings import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 from reviews.models import Category, Genre, Title, Review, Comment, User
 from reviews.validators import validate_year, check_username
 
-
+FIELDS = ('id', 'name', 'year', 'rating', 'description', 'genre', 'category')
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -77,16 +77,11 @@ class TitleGetSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     rating = serializers.SerializerMethodField()
 
+
     class Meta:
         model = Title
-        fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre',
-            'category'
-        )
-        read_only_fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre',
-            'category'
-        )
+        fields = FIELDS
+        read_only_fields = FIELDS
 
     def get_rating(self, data):
         return data.score
