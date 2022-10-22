@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
+from api_yamdb.settings import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 from .validators import validate_year, check_username
 
 
@@ -19,18 +20,17 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']
     username = models.CharField(
         validators=[check_username],
-        max_length=150,
+        max_length=NAME_MAX_LENGTH,
         unique=True,
         verbose_name='Имя пользователя'
     )
     email = models.EmailField(
-        max_length=254,
+        max_length=EMAIL_MAX_LENGTH,
         unique=True,
         verbose_name='Электронная почта'
     )
-    first_name = models.CharField(max_length=150, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
-    confirmation_code = models.CharField(max_length=120, default='12345')
+    first_name = models.CharField(max_length=NAME_MAX_LENGTH, blank=True)
+    last_name = models.CharField(max_length=NAME_MAX_LENGTH, blank=True)
     bio = models.TextField(
         null=True,
         blank=True,
@@ -150,6 +150,7 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name="%(class)s",
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
@@ -162,7 +163,7 @@ class BaseReviewComment(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return (self.text[:15], self.author, self.pub_date)
+        return self.text[:15]
 
 
 class Review(BaseReviewComment):

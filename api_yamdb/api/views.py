@@ -47,10 +47,11 @@ def signup(request):
             email=email,
         )
     except IntegrityError:
-        return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Ошибка сохранения пользователя'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     confirmation_code = default_token_generator.make_token(user)
-    user.confirmation_code = confirmation_code
-    user.save()
     send_confirmation_code(confirmation_code, email)
     return Response(
         data=serializer.data,
