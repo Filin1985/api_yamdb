@@ -2,13 +2,13 @@ from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
+from api_yamdb.settings import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 from reviews.models import Category, Genre, Title, Review, Comment, User
 from reviews.validators import validate_year, check_username
 
 
-NAME_MAX_LENGTH = 150
-EMAIL_MAX_LENGTH = 254
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -34,7 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User."""
     username = serializers.CharField(
         max_length=NAME_MAX_LENGTH,
-        required=True, validators=[check_username]
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all()),]
     )
 
     class Meta:
@@ -46,15 +47,7 @@ class UserSerializer(serializers.ModelSerializer):
         lookup_field = 'username'
 
     def validate_username(self, data):
-        """
-        Проверяем, что пользователь не использует имя 'me'
-        и уникальность username.
-        """
-        if User.objects.filter(username=data).exists():
-            raise serializers.ValidationError(
-                "Пользователь с таким именем уже есть!"
-            )
-        return data
+        return check_username(data)
 
 
 class CategorySerializer(serializers.ModelSerializer):
