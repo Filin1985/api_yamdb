@@ -70,7 +70,9 @@ class Command(BaseCommand):
                     score=row['score'],
                     pub_date=row['pub_date'])
 
-        with open('static/data/comments.csv', 'r', encoding='utf-8') as csvfile:
+        with open(
+            'static/data/comments.csv', 'r', encoding='utf-8'
+        ) as csvfile:
             dict_reader = DictReader(csvfile)
             for row in dict_reader:
                 Comment.objects.get_or_create(
