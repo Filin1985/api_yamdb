@@ -150,6 +150,7 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name="%(class)s",
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
@@ -162,7 +163,7 @@ class BaseReviewComment(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return (self.text[:15], self.author, self.pub_date)
+        return self.text[:15]
 
 
 class Review(BaseReviewComment):
