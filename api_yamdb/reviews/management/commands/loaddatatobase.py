@@ -2,7 +2,6 @@ import csv
 import os
 
 from django.core.management import BaseCommand
-from django.db import IntegrityError
 
 from reviews.models import (
     User,
@@ -34,11 +33,13 @@ FOREIGN_FIELDS = {
     'review_id': ('review', Review),
 }
 
+
 def open_file(file):
     file_path = os.path.join(FILES_DIR, file)
     with open(file_path, encoding='utf-8') as csv_file:
         return list(csv.reader(csv_file))
 
+    
 def load_file(file, model_type):
     data = open_file(file)
     rows = data[1:]
@@ -47,12 +48,10 @@ def load_file(file, model_type):
         new_data_csv = dict(csv_data)
         for key, value in csv_data.items():
             if key in FOREIGN_FIELDS.keys():
-                print(key)
-                print(csv_data)
                 new_key = FOREIGN_FIELDS[key][0]
-                print(new_key)
-                new_data_csv[new_key] = FOREIGN_FIELDS[key][1].objects.get(pk=value)
-        print(new_data_csv)
+                new_data_csv[new_key] = (
+                    FOREIGN_FIELDS[key][1].objects.get(pk=value)
+                )
         database = model_type(**new_data_csv)
         database.save()
 
