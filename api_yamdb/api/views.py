@@ -50,7 +50,8 @@ def signup(request):
         return Response(
             {
                 'message': """
-                           Пользователь с таким именем или почтой уже существует.
+                           Пользователь с таким именем 
+                           или почтой уже существует.
                            """
             },
             status=status.HTTP_400_BAD_REQUEST
