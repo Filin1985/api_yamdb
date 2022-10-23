@@ -49,7 +49,8 @@ def signup(request):
     except IntegrityError:
         return Response(
             {
-                'message': 'Пользователь с таким именем или почтой уже существует.'
+                'message':
+                'Пользователь с таким именем или почтой уже существует.'
             },
             status=status.HTTP_400_BAD_REQUEST
         )
