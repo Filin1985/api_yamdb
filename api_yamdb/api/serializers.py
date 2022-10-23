@@ -1,7 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from api_yamdb.settings import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 from reviews.models import Category, Genre, Title, Review, Comment, User
