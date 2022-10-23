@@ -29,19 +29,12 @@ class TokenSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели User."""
-    username = serializers.CharField(
-        max_length=NAME_MAX_LENGTH,
-        required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
-
     class Meta:
         model = User
         fields = (
             'username', 'email', 'first_name',
             'last_name', 'bio', 'role'
         )
-        lookup_field = 'username'
 
     def validate_username(self, data):
         return check_username(data)
@@ -81,10 +74,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre',
             'category'
         )
-        read_only_fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre',
-            'category'
-        )
+        read_only_fields = fields
 
     def get_rating(self, data):
         return data.score

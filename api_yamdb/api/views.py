@@ -48,7 +48,7 @@ def signup(request):
         )
     except IntegrityError:
         return Response(
-            {'message': 'Ошибка сохранения пользователя'},
+            {'message': 'Пользователь с таким именем или почтой уже существует.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     confirmation_code = default_token_generator.make_token(user)

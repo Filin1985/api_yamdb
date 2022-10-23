@@ -16,8 +16,6 @@ class User(AbstractUser):
         (MODERATOR, 'Модератор'),
         (USER, 'Пользователь'),
     ]
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
     username = models.CharField(
         validators=[check_username],
         max_length=NAME_MAX_LENGTH,
@@ -150,7 +148,7 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="%(class)s",
+        related_name='%(class)ss',
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(

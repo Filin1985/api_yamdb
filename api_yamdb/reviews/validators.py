@@ -3,7 +3,7 @@ import re
 
 from django.core.exceptions import ValidationError
 
-ANTI_PATTERN = r'(?!^[\w.@+-]+\Z).*'
+ANTI_PATTERN = r'[^\w.@+-]'
 REGEX_USERNAME = re.compile(r'^[\w.@+-]+\Z')
 
 
@@ -23,11 +23,11 @@ def check_username(value):
             f'Имя {value} пользователя использовать запрещено!'
         )
     if not REGEX_USERNAME.fullmatch(value):
-        result = re.search(ANTI_PATTERN, value)
+        result = list(set(re.findall(ANTI_PATTERN, value,)))
         raise ValidationError(
             f"""
             Используйте только цифры, буквы и символы ".@+-".
-            Символы {set(result.group(0))} запрещены.
+            Символы {''.join(result)} запрещены.
             """
         )
     return value

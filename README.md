@@ -91,7 +91,7 @@ python3 manage.py migrate
 7. Загружаем данные в models для тестирования
 
 ```
-python3 manage.py getmockdata
+python3 manage.py loaddatatobase
 ```
 
 8. Запускаем проект
