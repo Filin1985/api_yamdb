@@ -150,7 +150,7 @@ class BaseReviewComment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="%(class)s",
+        related_name='%(class)ss',
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(

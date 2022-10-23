@@ -8,8 +8,6 @@ from reviews.models import Category, Genre, Title, Review, Comment, User
 from reviews.validators import validate_year, check_username
 
 
-
-
 class SignUpSerializer(serializers.Serializer):
     """Сериализатор для запроса confirmation_code."""
     username = serializers.CharField(
@@ -83,10 +81,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre',
             'category'
         )
-        read_only_fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre',
-            'category'
-        )
+        read_only_fields = fields
 
     def get_rating(self, data):
         return data.score
